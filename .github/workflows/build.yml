@@ -1,0 +1,40 @@
+name: build
+
+# Cross-compiles the prebuilt Windows tool binaries that The Lube Shop bundles
+# (the Unix disk tools with no Windows package) and publishes them to the
+# `windows-tools` release. That release is public, so the app can download the
+# zips anonymously — the reason these binaries live in this separate public repo
+# rather than the (private) main lubeshop repo.
+#
+# Run manually (Actions → build → Run workflow) or by pushing a `v*` tag.
+# Re-running clobbers the release assets in place, so the download URLs are stable.
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  cpmtools:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install mingw-w64 cross toolchain
+        run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 zip
+      - name: Build cpmtools-win64.zip
+        run: HOST=x86_64-w64-mingw32 ./build-cpmtools-win64.sh dist
+      - uses: actions/upload-artifact@v5
+        with:
+          name: cpmtools-win64
+          path: dist/cpmtools-win64.zip
+      - name: Publish to the windows-tools release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view windows-tools >/dev/null 2>&1 \
+            || gh release create windows-tools --title "Windows tool binaries" \
+                 --notes "Prebuilt Windows binaries The Lube Shop bundles (cpmtools, …)."
+          gh release upload windows-tools dist/cpmtools-win64.zip --clobber
