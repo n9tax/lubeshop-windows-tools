@@ -42,8 +42,6 @@ jobs:
         run: HOST=x86_64-w64-mingw32 ./build-cpmtools-win64.sh dist
       - name: Build mtools-win64.zip
         run: HOST=x86_64-w64-mingw32 ./build-mtools-win64.sh dist
-      - name: Package hxc-win64.zip (repackage official HxC binary)
-        run: ./build-hxc-win64.sh dist
       - uses: actions/upload-artifact@v5
         with:
           name: c-tools
@@ -51,7 +49,7 @@ jobs:
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload windows-tools dist/cpmtools-win64.zip dist/mtools-win64.zip dist/hxc-win64.zip --clobber
+        run: gh release upload windows-tools dist/cpmtools-win64.zip dist/mtools-win64.zip --clobber
 
   # amitools (xdftool) is pure Python, so PyInstaller-freeze it — which must run
   # on Windows.
