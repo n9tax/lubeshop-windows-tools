@@ -16,6 +16,7 @@ repo is private, and GitHub requires auth to fetch private-repo release assets.
 | `mtools-win64.zip` | `mdir`, `mcopy`, `mdel`, `mformat` (argv[0] copies of one static `mtools.exe`) | mtools 4.0.49 |
 | `amitools-win64.zip` | `xdftool` (self-contained PyInstaller bundle in `xdftool/`) | amitools 0.8.1 (pure Python) |
 | `applecommander-win64.zip` | `applecommander-ac` (self-contained jpackage app-image in `applecommander-ac/`) | AppleCommander 13.1 (Java) |
+| `hxc-win64.zip` | `hxcfe` + DLLs (repackaged official x64 binary) in `hxc/` | HxC V2.16.13.1 (official build) |
 
 Binaries are statically linked (import only system DLLs — no mingw runtime to ship)
 and cross-compiled on Linux with mingw-w64. The recipe is
