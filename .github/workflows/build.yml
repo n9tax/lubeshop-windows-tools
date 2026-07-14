@@ -73,3 +73,30 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release upload windows-tools dist/amitools-win64.zip --clobber
+
+  # AppleCommander is a Java (Spring Boot) jar; jpackage wraps it into a
+  # self-contained app-image (native exe + jlink'd runtime) on Windows.
+  windows-applecommander:
+    needs: ensure-release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Build applecommander-win64.zip
+        shell: bash
+        run: ./build-applecommander-win64.sh dist
+      - uses: actions/upload-artifact@v5
+        with:
+          name: applecommander
+          path: dist/applecommander-win64.zip
+      - name: Publish
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload windows-tools dist/applecommander-win64.zip --clobber
