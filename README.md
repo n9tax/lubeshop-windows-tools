@@ -13,6 +13,7 @@ repo is private, and GitHub requires auth to fetch private-repo release assets.
 | Zip | Tools | Built from |
 |-----|-------|------------|
 | `cpmtools-win64.zip` | `cpmls`, `cpmcp`, `cpmrm`, `mkfs.cpm` + `diskdefs` | cpmtools 2.23 vs libdsk 1.5.22 |
+| `mtools-win64.zip` | `mdir`, `mcopy`, `mdel`, `mformat` (argv[0] copies of one static `mtools.exe`) | mtools 4.0.49 |
 
 Binaries are statically linked (import only system DLLs — no mingw runtime to ship)
 and cross-compiled on Linux with mingw-w64. The recipe is
