@@ -1,7 +1,7 @@
 name: build
 
-# Cross-compiles the prebuilt Windows tool binaries that The Lube Shop bundles
-# (the Unix disk tools with no Windows package) and publishes them to the
+# Cross-compiles / freezes the prebuilt Windows tool binaries that The Lube Shop
+# bundles (the disk tools with no Windows package) and publishes them to the
 # `windows-tools` release. That release is public, so the app can download the
 # zips anonymously — the reason these binaries live in this separate public repo
 # rather than the (private) main lubeshop repo.
@@ -18,7 +18,21 @@ permissions:
   contents: write
 
 jobs:
-  tools:
+  # Create the release once so the parallel build jobs below don't race on it.
+  ensure-release:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view windows-tools --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create windows-tools --repo "$GITHUB_REPOSITORY" \
+                 --title "Windows tool binaries" \
+                 --notes "Prebuilt Windows binaries The Lube Shop bundles (cpmtools, mtools, amitools, …)."
+
+  # C tools: cross-compiled on Linux with mingw-w64.
+  linux-tools:
+    needs: ensure-release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -30,13 +44,32 @@ jobs:
         run: HOST=x86_64-w64-mingw32 ./build-mtools-win64.sh dist
       - uses: actions/upload-artifact@v5
         with:
-          name: windows-tools
+          name: c-tools
           path: dist/*.zip
-      - name: Publish to the windows-tools release
+      - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release view windows-tools >/dev/null 2>&1 \
-            || gh release create windows-tools --title "Windows tool binaries" \
-                 --notes "Prebuilt Windows binaries The Lube Shop bundles (cpmtools, mtools, …)."
-          gh release upload windows-tools dist/cpmtools-win64.zip dist/mtools-win64.zip --clobber
+        run: gh release upload windows-tools dist/cpmtools-win64.zip dist/mtools-win64.zip --clobber
+
+  # amitools (xdftool) is pure Python, so PyInstaller-freeze it — which must run
+  # on Windows.
+  windows-amitools:
+    needs: ensure-release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Build amitools-win64.zip
+        shell: bash
+        run: ./build-amitools-win64.sh dist
+      - uses: actions/upload-artifact@v5
+        with:
+          name: amitools
+          path: dist/amitools-win64.zip
+      - name: Publish
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload windows-tools dist/amitools-win64.zip --clobber
