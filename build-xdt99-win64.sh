@@ -69,8 +69,10 @@ echo ">> freezing xdm99 + xhm99 (onedir)"
 ( cd "$SRC" && python -m PyInstaller --noconfirm --clean xdt99.spec )
 
 DIST="$SRC/dist/xdt99"
-echo ">> sanity: both exes present"
-ls "$DIST/xdm99.exe" "$DIST/xhm99.exe"
+echo ">> smoke test: both exes actually run (catches missing hidden imports)"
+"$DIST/xdm99.exe" --help >/dev/null
+"$DIST/xhm99.exe" --help >/dev/null
+echo "   xdm99.exe / xhm99.exe run OK"
 
 echo ">> packaging (GPL-3.0 license + source note)"
 cp "$SRC/COPYING" "$DIST/LICENSE-xdt99.txt" 2>/dev/null \
